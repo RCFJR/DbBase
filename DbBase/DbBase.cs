@@ -40,6 +40,9 @@ namespace DbBase
 
             foreach (PropertyInfo prop in props)
             {
+                valueOf = prop.GetValue(entity, null);
+                string typeProp = prop.ToString().Replace(" " + prop.Name, "");
+
                 if (String.IsNullOrEmpty(Select))
                 {
                     Select = "SELECT " + prop.Name + " ";
@@ -48,11 +51,7 @@ namespace DbBase
                 {
                     Select += " ," + prop.Name + " ";
                 }
-
-
-                valueOf = prop.GetValue(entity, null);
-                string typeProp = prop.ToString().Replace(" " + prop.Name, "");
-
+                
                 if (typeProp.Contains("Int"))
                 {
                     if (Convert.ToInt64(valueOf) > 0)
@@ -96,8 +95,8 @@ namespace DbBase
 
         public string Update<T>(T entity)
         {
-            String Update = "";
-            String Where = "";
+            String Update = String.Empty;
+            String Where = String.Empty;
             Type Object = typeof(T);
             PropertyInfo[] props = Object.GetProperties();
             StringBuilder sb = new StringBuilder();
@@ -106,89 +105,115 @@ namespace DbBase
 
             foreach (PropertyInfo prop in props)
             {
-                if (String.IsNullOrEmpty(Update))
-                {
-                    Update = "Update " + Object.Name + " SET " + prop.Name + " ";
-                }
-                else
-                {
-                    //Select += " ," + prop.Name + " ";
-                }
-
-
                 valueOf = prop.GetValue(entity, null);
                 string typeProp = prop.ToString().Replace(" " + prop.Name, "");
 
-                if (typeProp.Contains("Int"))
+                if (prop.Name.Contains("pk"))
                 {
-                    if (Convert.ToInt64(valueOf) > 0)
+                    Where = "Where " + prop.Name + " = " + FormatType(typeProp, valueOf);
+                }
+                else
+                {
+                    if (String.IsNullOrEmpty(Update))
                     {
-                        if (String.IsNullOrEmpty(Where))
-                        {
-                            Where = " WHERE " + prop.Name + " = " + valueOf + "";
-                        }
-                        else
-                        {
-                            Where += " AND " + prop.Name + " = " + valueOf + "";
-                        }
+                        Update = "Update " + Object.Name + " SET " + prop.Name + " = " + FormatType(typeProp, valueOf) + " ";
+                    }
+                    else
+                    {
+                        Update += "," + prop.Name + " = " + FormatType(typeProp, valueOf) + " ";
                     }
                 }
-                else if (typeProp.Equals("System.String"))
-                {
-                    if (valueOf != null)
-                    {
-                        if (!String.IsNullOrEmpty(valueOf.ToString()))
-                        {
-                            if (String.IsNullOrEmpty(Where))
-                            {
-                                Where = " WHERE " + prop.Name + " = '" + valueOf.ToString() + "'";
-                            }
-                            else
-                            {
-                                Where += " AND " + prop.Name + " = '" + valueOf.ToString() + "'";
-                            }
-                        }
-                    }
-
-                }
-
-                    
-
-
-                //Pego o valor da propriedade.
-                // ValorDaPropriedade = propriedade.GetValue(entity, null);
-                //string typeProp = propriedade.ToString().Replace(" " + propriedade.Name, "");
-
-
+                
             }
-            Select += " FROM " + Object.Name + Where;
 
+            Update += Where;
 
-
-            return Select;
+            return Update;
         }
 
         #endregion
 
+        #region Insert
+
+        public string Insert<T>(T entity)
+        {
+            String Insert = String.Empty;
+            String Values = String.Empty;
+            Type Object = typeof(T);
+            PropertyInfo[] props = Object.GetProperties();
+            StringBuilder sb = new StringBuilder();
+            object valueOf = null;
+
+
+            foreach (PropertyInfo prop in props)
+            {
+                valueOf = prop.GetValue(entity, null);
+                string typeProp = prop.ToString().Replace(" " + prop.Name, "");
+
+                if (!prop.Name.Contains("pk"))
+                {
+                    if (String.IsNullOrEmpty(Insert))
+                    {
+                        Insert = "Insert into " + Object.Name + " (" + prop.Name + "";
+                        Values = ") Values (" + FormatType(typeProp, valueOf);
+                    }
+                    else
+                    {
+                        Insert += ", " + prop.Name;
+                        Values += ", " + FormatType(typeProp, valueOf);
+                    }
+                }
+            }
+            Values += ");";
+            Insert += Values;
+
+            return Insert;
+        }
+
+        #endregion
+
+        #region Delete
+
+        public string Delete<T>(T entity)
+        {
+            String Delete = String.Empty;
+            String Where = String.Empty;
+            Type Object = typeof(T);
+            PropertyInfo[] props = Object.GetProperties();
+            StringBuilder sb = new StringBuilder();
+            object valueOf = null;
+
+            Delete = "Delete from " + Object.Name;
+
+            foreach (PropertyInfo prop in props)
+            {
+                valueOf = prop.GetValue(entity, null);
+                string typeProp = prop.ToString().Replace(" " + prop.Name, "");
+
+                if (prop.Name.Contains("pk"))
+                {
+                    Where = " Where " + prop.Name + " = " + FormatType(typeProp, valueOf);
+                }
+            }
+            Delete += Where;
+
+            return Delete;
+        }
+
+        #endregion
 
         #region Variable Type
 
-        private string FormatV(string type, object variable)
+        private string FormatType(string typeProp, object value)
         {
-            if (type.Contains("Int"))
-            {
-                return "";
-            }
-            else if (type.Contains("System.String"))
-            {
-                return "";
-            }
+            if ((typeProp.Contains("int")) || (typeProp.Contains("long")) || (typeProp.Contains("double")))
+                return "" + value + "";
+            else if ((typeProp.Contains("String")) || (typeProp.Contains("string")) || (typeProp.Contains("char")))
+                return "'" + value + "'";
             else
-            {
-                return "";
-            }
+                return
+                    "";
         }
-
         #endregion
     }
 }
