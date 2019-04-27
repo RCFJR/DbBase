@@ -1,0 +1,5 @@
+C:\Git\BdBase\DbBase\DbBase\bin\Debug\DbBase.dll
+C:\Git\BdBase\DbBase\DbBase\bin\Debug\DbBase.pdb
+C:\Git\BdBase\DbBase\DbBase\obj\Debug\DbBase.csproj.CoreCompileInputs.cache
+C:\Git\BdBase\DbBase\DbBase\obj\Debug\DbBase.dll
+C:\Git\BdBase\DbBase\DbBase\obj\Debug\DbBase.pdb
