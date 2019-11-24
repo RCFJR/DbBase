@@ -51,7 +51,7 @@ namespace DbBase
                 {
                     Select += " ," + prop.Name + " ";
                 }
-                
+
                 if (typeProp.Contains("Int"))
                 {
                     if (Convert.ToInt64(valueOf) > 0)
@@ -108,7 +108,7 @@ namespace DbBase
                 valueOf = prop.GetValue(entity, null);
                 string typeProp = prop.ToString().Replace(" " + prop.Name, "");
 
-                if (prop.Name.Contains("pk"))
+                if (prop.Name.ToUpper().Contains("ID_"))
                 {
                     Where = "Where " + prop.Name + " = " + FormatType(typeProp, valueOf);
                 }
@@ -123,7 +123,7 @@ namespace DbBase
                         Update += "," + prop.Name + " = " + FormatType(typeProp, valueOf) + " ";
                     }
                 }
-                
+
             }
 
             Update += Where;
@@ -150,7 +150,7 @@ namespace DbBase
                 valueOf = prop.GetValue(entity, null);
                 string typeProp = prop.ToString().Replace(" " + prop.Name, "");
 
-                if (!prop.Name.Contains("pk"))
+                if (!prop.Name.ToUpper().Contains("ID_"))
                 {
                     if (String.IsNullOrEmpty(Insert))
                     {
@@ -190,7 +190,7 @@ namespace DbBase
                 valueOf = prop.GetValue(entity, null);
                 string typeProp = prop.ToString().Replace(" " + prop.Name, "");
 
-                if (prop.Name.Contains("pk"))
+                if (prop.Name.ToUpper().Contains("ID_"))
                 {
                     Where = " Where " + prop.Name + " = " + FormatType(typeProp, valueOf);
                 }
@@ -206,9 +206,9 @@ namespace DbBase
 
         private string FormatType(string typeProp, object value)
         {
-            if ((typeProp.Contains("int")) || (typeProp.Contains("long")) || (typeProp.Contains("double")))
+            if ((typeProp.ToUpper().Contains("INT")) || (typeProp.ToUpper().Contains("LONG")) || (typeProp.ToUpper().Contains("DOUBLE")))
                 return "" + value + "";
-            else if ((typeProp.Contains("String")) || (typeProp.Contains("string")) || (typeProp.Contains("char")))
+            else if ((typeProp.ToUpper().Contains("STRING")) || (typeProp.ToUpper().Contains("CHAR")))
                 return "'" + value + "'";
             else
                 return
