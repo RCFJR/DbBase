@@ -28,7 +28,7 @@ namespace DbBase
 
         #region Select
 
-        public string GetAll<T>(T entity)
+        public string GetAll<T>(T entity, bool paginado, int qiantidade_total, int quantidade_pagina, int pagina)
         {
             String Select = "";
             String Where = "";
@@ -45,12 +45,76 @@ namespace DbBase
 
                 if (String.IsNullOrEmpty(Select))
                 {
-                    Select = "SELECT " + prop.Name + " ";
+                    Select = "SELECT ROW_NUMBER() OVER ( ORDER BY "+ prop.Name + " ) AS RowNum, " + prop.Name + " ";
                 }
                 else
                 {
                     Select += " ," + prop.Name + " ";
                 }
+
+                if (typeProp.Contains("Int"))
+                {
+                    if (Convert.ToInt64(valueOf) > 0)
+                    {
+                        if (String.IsNullOrEmpty(Where))
+                        {
+                            Where = " WHERE " + prop.Name + " = " + valueOf + "";
+                        }
+                        else
+                        {
+                            Where += " AND " + prop.Name + " = " + valueOf + "";
+                        }
+                    }
+                }
+                else if (typeProp.Equals("System.String"))
+                {
+                    if (valueOf != null)
+                    {
+                        if (!String.IsNullOrEmpty(valueOf.ToString()))
+                        {
+                            if (String.IsNullOrEmpty(Where))
+                            {
+                                Where = " WHERE " + prop.Name + " = '" + valueOf.ToString() + "'";
+                            }
+                            else
+                            {
+                                Where += " AND " + prop.Name + " = '" + valueOf.ToString() + "'";
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            Select += " FROM " + Object.Name + Where;
+
+            if (paginado)
+            {
+                int inicial = (pagina * quantidade_pagina) - quantidade_pagina + 1;
+                int final = (pagina * quantidade_pagina) + 1;
+                Select = "Select * FROM (" + Select + ")X WHERE X.RowNum >= " + inicial.ToString() + " AND X.RowNum <= " + final.ToString();
+            }
+            
+            return Select;
+        }
+
+        public string GetCount<T>(T entity)
+        {
+            String Select = "";
+            String Where = "";
+            Type Object = typeof(T);
+            PropertyInfo[] props = Object.GetProperties();
+            StringBuilder sb = new StringBuilder();
+            object valueOf = null;
+
+
+            foreach (PropertyInfo prop in props)
+            {
+                valueOf = prop.GetValue(entity, null);
+                string typeProp = prop.ToString().Replace(" " + prop.Name, "");
+
+                if(prop.Name.Contains("ID_"))
+                    Select = "Select count("+prop.Name+") ";
 
                 if (typeProp.Contains("Int"))
                 {
